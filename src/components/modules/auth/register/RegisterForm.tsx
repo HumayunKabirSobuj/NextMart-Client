@@ -15,14 +15,34 @@ import Link from "next/link";
 import Logo from "@/app/assets/svgs/Logo";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registrationSchema } from "./registerValidation";
+import { registerUser } from "@/services/AuthService";
+import { toast } from "sonner";
 
 export default function RegisterForm() {
   const form = useForm({
     resolver: zodResolver(registrationSchema),
   });
 
+  const {
+    formState: { isSubmitting },
+  } = form;
+
+  const password = form.watch("password");
+  const passwordConfirm = form.watch("passwordConfirm");
+  // console.log(password, passwordConfirm);
+
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    console.log(data);
+    try {
+      const res = await registerUser(data);
+      // console.log(res);
+      if (res?.success) {
+        toast.success(res?.message);
+      } else {
+        toast.error(res?.message);
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
   };
 
   return (
@@ -87,13 +107,21 @@ export default function RegisterForm() {
                   <Input type="password" {...field} value={field.value || ""} />
                 </FormControl>
 
-                <FormMessage />
+                {passwordConfirm && password !== passwordConfirm ? (
+                  <FormMessage>Password does not match</FormMessage>
+                ) : (
+                  <FormMessage />
+                )}
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="mt-5 w-full">
-            Register
+          <Button
+            disabled={passwordConfirm && password !== passwordConfirm}
+            type="submit"
+            className="mt-5 w-full"
+          >
+            {isSubmitting ? "Registering.." : "Register"}
           </Button>
         </form>
       </Form>
