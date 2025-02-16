@@ -1,4 +1,5 @@
 "use client";
+import ReCAPTCHA from "react-google-recaptcha";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +15,10 @@ import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import Link from "next/link";
 import Logo from "@/app/assets/svgs/Logo";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginUser} from "@/services/AuthService";
+import { loginUser, reCaptchaTokenVerification } from "@/services/AuthService";
 import { toast } from "sonner";
 import { loginSchema } from "./loginValidation";
+import { useState } from "react";
 
 export default function LoginForm() {
   const form = useForm({
@@ -27,7 +29,20 @@ export default function LoginForm() {
     formState: { isSubmitting },
   } = form;
 
+  const [reCaptchaStatus, setReCaptchaStatus] = useState(false);
 
+  const handleRecaptcha = async (value: string | null) => {
+    try {
+      const res = await reCaptchaTokenVerification(value!);
+      // console.log(res);
+
+      if (res?.success) {
+        setReCaptchaStatus(true);
+      }
+    } catch (error: any) {
+      console.error(error);
+    }
+  };
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     try {
@@ -56,7 +71,6 @@ export default function LoginForm() {
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-         
           <FormField
             control={form.control}
             name="email"
@@ -83,10 +97,15 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-          
+          <div className="flex items-center justify-center mt-5">
+            <ReCAPTCHA
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_CLIENT_KEY!}
+              onChange={handleRecaptcha}
+            />
+          </div>
 
           <Button
-            
+            disabled={reCaptchaStatus ? false : true}
             type="submit"
             className="mt-5 w-full"
           >
