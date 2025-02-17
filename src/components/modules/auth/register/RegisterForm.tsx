@@ -119,7 +119,7 @@ export default function RegisterForm() {
           <Button
             disabled={passwordConfirm && password !== passwordConfirm}
             type="submit"
-            className="mt-5 w-full"
+            className="mt-10 w-full"
           >
             {isSubmitting ? "Registering.." : "Register"}
           </Button>
