@@ -10,6 +10,7 @@ const NMImageUploader = () => {
     // console.log(file);
     setImageFiles((prev) => [...prev, file]);
   };
+  
   return (
     <div>
       <Input
