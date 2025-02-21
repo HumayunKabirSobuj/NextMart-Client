@@ -1,10 +1,12 @@
-"use client"
+"use client";
 import { ICategory } from "@/types";
 import CreateCategoryModal from "./CreateCategoryModal";
 import { NMTable } from "@/components/ui/core/NMTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Trash } from "lucide-react";
 import Image from "next/image";
+import { DeleteCategory } from "@/services/Category";
+import { toast } from "sonner";
 type TCategoriesProps = {
   categories: ICategory[];
 };
@@ -12,10 +14,20 @@ type TCategoriesProps = {
 const ManageCategories = ({ categories }: TCategoriesProps) => {
   // console.log(categories);
 
-  const handleDelete = (data: ICategory) => {
-    console.log(data);
+  const handleDelete = async (data: ICategory) => {
+    // console.log(data);
+    try {
+      const res = await DeleteCategory(data?._id);
+      console.log(res);
+      if (res?.success) {
+        toast.success(res?.message);
+      } else {
+        toast.error(res?.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
-
 
   const columns: ColumnDef<ICategory>[] = [
     {
@@ -67,7 +79,7 @@ const ManageCategories = ({ categories }: TCategoriesProps) => {
   ];
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-10">
         <h1 className="text-xl font-bold">Manage Category</h1>
         <CreateCategoryModal />
       </div>
