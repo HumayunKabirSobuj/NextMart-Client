@@ -21,7 +21,6 @@ import { useEffect, useState } from "react";
 import NMImageUploader from "@/components/ui/core/NMImageUploader";
 import ImagePreviewer from "@/components/ui/core/NMImageUploader/ImagePreviewer";
 import { Plus } from "lucide-react";
-
 import {
   Select,
   SelectContent,
@@ -29,19 +28,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import { useRouter } from "next/navigation";
+import Logo from "@/app/assets/svgs/Logo";
 import { IBrand, ICategory } from "@/types";
 import { getAllCategories } from "@/services/Category";
 import { getAllBrands } from "@/services/Brand";
-// import { useRouter } from "next/navigation";
-import Logo from "@/app/assets/svgs/Logo";
+import { addProduct } from "@/services/Product";
+import { toast } from "sonner";
 
 export default function AddProductsForm() {
   const [imageFiles, setImageFiles] = useState<File[] | []>([]);
   const [imagePreview, setImagePreview] = useState<string[] | []>([]);
   const [categories, setCategories] = useState<ICategory[] | []>([]);
   const [brands, setBrands] = useState<IBrand[] | []>([]);
-
-  // const router = useRouter();
+  const router = useRouter();
 
   const form = useForm({
     defaultValues: {
@@ -73,20 +74,6 @@ export default function AddProductsForm() {
 
   // console.log(specFields);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [categoriesData, brandsData] = await Promise.all([
-        getAllCategories(),
-        getAllBrands(),
-      ]);
-
-      setCategories(categoriesData?.data);
-      setBrands(brandsData?.data);
-    };
-
-    fetchData();
-  }, []);
-
   const { append: appendFeatures, fields: featureFields } = useFieldArray({
     control: form.control,
     name: "keyFeatures",
@@ -107,9 +94,17 @@ export default function AddProductsForm() {
     appendSpec({ key: "", value: "" });
   };
 
-  // console.log(specFields)
-
-  // console.log(featureFields)
+  useEffect(() => {
+    const fetchData = async () => {
+      const [categoriesData, brandsData] = await Promise.all([
+        getAllCategories(),
+        getAllBrands(),
+      ]);
+      setCategories(categoriesData?.data);
+      setBrands(brandsData?.data);
+    };
+    fetchData();
+  }, []);
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     const availableColors = data?.availableColors.map(
@@ -126,8 +121,34 @@ export default function AddProductsForm() {
     );
 
     // console.log({ availableColors, keyFeatures, specification });
+
+    const modifiedData = {
+      ...data,
+      availableColors,
+      keyFeatures,
+      specification,
+      price: parseFloat(data?.price),
+      stock: parseInt(data?.stock),
+      weight: parseFloat(data?.weight),
+    };
+
+    // console.log(modifiedData);
+
+    const formData = new FormData();
+    formData.append("data", JSON.stringify(modifiedData));
+
+    for (const file of imageFiles) {
+      formData.append("images", file);
+    }
+
     try {
-      // console.log(data);
+      const res = await addProduct(formData);
+      if (res?.success) {
+        toast.success(res?.message);
+        router.push("/user/shop/products");
+      } else {
+        toast.error(res?.message);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -186,18 +207,17 @@ export default function AddProductsForm() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select Product Category" />
+                        <SelectValue placeholder="Select a product category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories.map((category) => (
+                      {categories.map((category: ICategory) => (
                         <SelectItem key={category?._id} value={category?._id}>
                           {category?.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-
                   <FormMessage />
                 </FormItem>
               )}
@@ -214,18 +234,17 @@ export default function AddProductsForm() {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select Product Brand" />
+                        <SelectValue placeholder="Select a product brand" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {brands.map((brand) => (
+                      {brands.map((brand: IBrand) => (
                         <SelectItem key={brand?._id} value={brand?._id}>
                           {brand?.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-
                   <FormMessage />
                 </FormItem>
               )}
