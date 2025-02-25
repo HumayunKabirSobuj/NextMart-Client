@@ -32,8 +32,7 @@ import {
 import { IBrand, ICategory } from "@/types";
 import { getAllCategories } from "@/services/Category";
 import { getAllBrands } from "@/services/Brand";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+// import { useRouter } from "next/navigation";
 import Logo from "@/app/assets/svgs/Logo";
 
 export default function AddProductsForm() {
@@ -42,7 +41,7 @@ export default function AddProductsForm() {
   const [categories, setCategories] = useState<ICategory[] | []>([]);
   const [brands, setBrands] = useState<IBrand[] | []>([]);
 
-  const router = useRouter();
+  // const router = useRouter();
 
   const form = useForm({
     defaultValues: {
@@ -72,15 +71,6 @@ export default function AddProductsForm() {
     appendColor({ value: "" });
   };
 
-  const { append: appendSpec, fields: specFields } = useFieldArray({
-    control: form.control,
-    name: "specification",
-  });
-
-  const addSpec = () => {
-    appendSpec({ key: "", value: "" });
-  };
-
   // console.log(specFields);
 
   useEffect(() => {
@@ -108,45 +98,38 @@ export default function AddProductsForm() {
     appendFeatures({ value: "" });
   };
 
+  const { append: appendSpec, fields: specFields } = useFieldArray({
+    control: form.control,
+    name: "specification",
+  });
+
+  const addSpec = () => {
+    appendSpec({ key: "", value: "" });
+  };
+
+  // console.log(specFields)
+
   // console.log(featureFields)
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    const availableColors = data.availableColors.map(
+    const availableColors = data?.availableColors.map(
       (color: { value: string }) => color.value
     );
-
-    const keyFeatures = data.keyFeatures.map(
+    const keyFeatures = data?.keyFeatures.map(
       (feature: { value: string }) => feature.value
     );
 
     const specification: { [key: string]: string } = {};
-    data.specification.forEach(
+    data?.specification.forEach(
       (item: { key: string; value: string }) =>
         (specification[item.key] = item.value)
     );
 
     // console.log({ availableColors, keyFeatures, specification });
-
-    const modifiedData = {
-      ...data,
-      availableColors,
-      keyFeatures,
-      specification,
-      price: parseFloat(data.price),
-      stock: parseInt(data.stock),
-      weight: parseFloat(data.stock),
-    };
-
-    const formData = new FormData();
-    formData.append("data", JSON.stringify(modifiedData));
-
-    for (const file of imageFiles) {
-      formData.append("images", file);
-    }
     try {
-      console.log(data);
-    } catch (err: any) {
-      console.error(err);
+      // console.log(data);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -395,11 +378,10 @@ export default function AddProductsForm() {
                 <Plus className="text-primary" />
               </Button>
             </div>
-
             {specFields.map((specField, index) => (
               <div
                 key={specField.id}
-                className="grid grid-cols-1 gap-4 md:grid-cols-2 my-5"
+                className="grid grid-cols-1 md:grid-cols-2 gap-5 my-5"
               >
                 <FormField
                   control={form.control}
