@@ -30,32 +30,42 @@ import {
 } from "@/components/ui/select";
 
 import { useRouter } from "next/navigation";
-import { IBrand, ICategory } from "@/types";
+import { IBrand, ICategory, IProduct } from "@/types";
 import { getAllCategories } from "@/services/Category";
 import { getAllBrands } from "@/services/Brand";
-import { addProduct } from "@/services/Product";
 import { toast } from "sonner";
+import { updateProduct } from "@/services/Product";
 import Logo from "@/assets/svgs/Logo";
 
-export default function AddProductsForm() {
+export default function UpdateProductForm({ product }: { product: IProduct }) {
   const [imageFiles, setImageFiles] = useState<File[] | []>([]);
-  const [imagePreview, setImagePreview] = useState<string[] | []>([]);
+  const [imagePreview, setImagePreview] = useState<string[] | []>(
+    product?.imageUrls || []
+  );
   const [categories, setCategories] = useState<ICategory[] | []>([]);
   const [brands, setBrands] = useState<IBrand[] | []>([]);
   const router = useRouter();
 
   const form = useForm({
     defaultValues: {
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      brand: "",
-      stock: "",
-      weight: "",
-      availableColors: [{ value: "" }],
-      keyFeatures: [{ value: "" }],
-      specification: [{ key: "", value: "" }],
+      name: product?.name || "",
+      description: product?.description || "",
+      price: product?.price || "",
+      category: product?.category?.name || "",
+      brand: product?.brand?.name || "",
+      stock: product?.stock || "",
+      weight: product?.weight || "",
+      availableColors: product?.availableColors?.map((color) => ({
+        value: color,
+      })) || [{ value: "" }],
+
+      specification: Object.entries(product?.specification || {}).map(
+        ([key, value]) => ({ key, value })
+      ) || [{ key: "", value: "" }],
+
+      keyFeatures: product?.keyFeatures?.map((feature) => ({
+        value: feature,
+      })) || [{ value: "" }],
     },
   });
 
@@ -142,7 +152,7 @@ export default function AddProductsForm() {
     }
 
     try {
-      const res = await addProduct(formData);
+      const res = await updateProduct(formData, product?._id);
       if (res?.success) {
         toast.success(res?.message);
         router.push("/user/shop/products");
@@ -159,7 +169,7 @@ export default function AddProductsForm() {
       <div className="flex items-center space-x-4 mb-5 ">
         <Logo />
 
-        <h1 className="text-xl font-bold">Add Product</h1>
+        <h1 className="text-xl font-bold">Update Product Info</h1>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -433,7 +443,7 @@ export default function AddProductsForm() {
           </div>
 
           <Button type="submit" className="mt-5 w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Adding Product....." : "Add Product"}
+            {isSubmitting ? "Updating Product....." : "Update Product"}
           </Button>
         </form>
       </Form>

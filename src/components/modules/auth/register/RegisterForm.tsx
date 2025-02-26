@@ -12,11 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import Link from "next/link";
-import Logo from "@/app/assets/svgs/Logo";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerUser } from "@/services/AuthService";
 import { toast } from "sonner";
 import { loginSchema } from "../login/loginValidation";
+import Logo from "@/assets/svgs/Logo";
 
 export default function RegisterForm() {
   const form = useForm({
