@@ -3,6 +3,7 @@
 import Category from "@/components/modules/home/Category";
 import FeatureProducts from "@/components/modules/home/FeatureProducts";
 import HeroSection from "@/components/modules/home/HeroSection";
+import TopBrands from "@/components/modules/home/TopBrands";
 // import { useUser } from "@/context/UserContext";
 
 const HomePage = () => {
@@ -13,6 +14,7 @@ const HomePage = () => {
       <HeroSection/>
       <Category/>
       <FeatureProducts/>
+      <TopBrands/>
     </div>
   );
 };

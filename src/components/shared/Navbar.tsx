@@ -1,4 +1,5 @@
 "use client";
+import Logo from "@/assets/svgs/Logo";
 import { Button } from "../ui/button";
 import { Heart, LogOut, ShoppingBag } from "lucide-react";
 import Link from "next/link";
@@ -15,13 +16,12 @@ import { logout } from "@/services/AuthService";
 import { useUser } from "@/context/UserContext";
 import { usePathname, useRouter } from "next/navigation";
 import { protectedRoutes } from "@/contants";
-import Logo from "@/assets/svgs/Logo";
 
 export default function Navbar() {
+  const { user, setIsLoading } = useUser();
   const pathname = usePathname();
   const router = useRouter();
-  const { user, setIsLoading } = useUser();
-  // console.log(user);
+
   const handleLogOut = () => {
     logout();
     setIsLoading(true);
@@ -31,12 +31,13 @@ export default function Navbar() {
   };
 
   return (
-    <header className="border-b w-full">
-      <div className="container flex justify-between items-center mx-auto h-16 px-3">
-        <h1 className="text-2xl font-black flex items-center">
-          <Logo />
-          Next Mart
-        </h1>
+    <header className="border-b bg-background w-full sticky top-0 z-10">
+      <div className="container flex justify-between items-center mx-auto h-16 px-5">
+        <Link href="/">
+          <h1 className="text-2xl font-black flex items-center">
+            <Logo /> Next Mart
+          </h1>
+        </Link>
         <div className="max-w-md  flex-grow">
           <input
             type="text"
@@ -51,11 +52,13 @@ export default function Navbar() {
           <Button variant="outline" className="rounded-full p-0 size-10">
             <ShoppingBag />
           </Button>
-          {user ? (
+
+          {user?.email ? (
             <>
               <Link href="/create-shop">
                 <Button className="rounded-full">Create Shop</Button>
               </Link>
+
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Avatar>
@@ -67,14 +70,17 @@ export default function Navbar() {
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href={`/${user?.role}/dashboard`}>Dashboard</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>My Shop</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="bg-red-500 cursor-pointer"
                     onClick={handleLogOut}
                   >
-                    <LogOut /> <span>LogOut</span>
+                    <LogOut />
+                    <span>Log Out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
